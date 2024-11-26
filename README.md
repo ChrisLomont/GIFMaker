@@ -12,32 +12,32 @@ NOTE: this does not make small gifs! It uses a nice trick of the LZW format to m
 
 The encode has default internal palette
 
-![DeluxePaint-palette](GIFMaker\DeluxePaint-palette.png)
+![DeluxePaint-palette](GIFMaker/DeluxePaint-palette.png)
 
 
 
 Demo program takes this 24-bit PNG (size 9kb)
 
-![grad00](imgs\grad00.png)
+![grad00](imgs/grad00.png)
 
 to variations of quantized, palette optimized 50 frame GIFs. Examples
 
 Palette optimized, dithered:
 
-![test_qd](.\out\test_qd.gif)
+![test_qd](out/test_qd.gif)
 
 
 
 Internal palette from above, dithered
 
-![test_d](.\out\test_d.gif)
+![test_d](out/test_d.gif)
 
-Palette optimized,. no dither
+Palette optimized, no dither
 
-![test_q](.\out\test_q.gif)
+![test_q](out/test_q.gif)
 
 Internal from above palette, no dither
 
-![test_n](.\out\test_n.gif)
+![test_n](out/test_n.gif)
 
 END OF FILE
