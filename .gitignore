@@ -405,3 +405,4 @@ FodyWeavers.xsd
 *.ppm
 GIFMaker/*.gif
 !imgs/*.png
+!GIFMaker/*.png
