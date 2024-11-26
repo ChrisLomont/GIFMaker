@@ -21,6 +21,12 @@
     <ClInclude Include="ColorQuantizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Dither.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="giftest.cpp">
@@ -29,5 +35,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="gif89a.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

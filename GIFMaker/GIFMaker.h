@@ -127,7 +127,7 @@ public:
 
 	// delay in 100ths of sec
 	// frame is taken so first 255 unique colors are palette, rest mapped to those
-	void AddFrame(const uint8_t * rgbaData, uint16_t delayIn100thsOfSecond)
+	void AddFrame(const uint8_t * rgbaData, uint16_t delayIn100thsOfSecond, bool useLocalPalette2 = false)
 	{
 		// todo - track alpha, local color table
 		std::vector<uint8_t> pixels;
@@ -136,42 +136,28 @@ public:
 
 		int pack =
 			(0 << 5) | // 3: reserved
-			(1 << 2) | // 3: disposal method leave in place
+			(0 << 2) | // 3: disposal method : 0 = unspecified, 1=leave in place, 2=to background 
 			(0 << 1) | // 1: no user input
-			(0 << 0);   // 1: no transparency
+			(0 << 0);  // 1: no transparency
 		int delayLo = delayIn100thsOfSecond & 255;
 		int delayHi = delayIn100thsOfSecond/256;
 		// Extension 0x21, Graphic Control Extension 0xF9, byte size 4,
 		// delay lo byte, delay high byte, transparent color index, block end
 		Write8({ 0x21,0xF9,0x04, pack, delayLo, delayHi, transparentIndex, 0});
 
-
+		bool localPalette = useLocalPalettes || useLocalPalette2;
 		// Image Descriptor 0x2C, left lo, left hi, top lo, top hi,
 		// width low, width hi, height lo, height hi
 		Write8({ 0x2C,0,0,0,0,w & 255,w / 256,h & 255,h / 256 });
 		Write8(
-			((useLocalPalettes ?1:0) << 7) | // 1: has local color table
+			((localPalette ?1:0) << 7) | // 1: has local color table
 			(0 << 6) |                       // 1: interlaced
 			(0 << 5) |                       // 1: sorted palette
 			(0 << 3) |                       // 2: reserved
 			((bitDepth-1)&7)                 // 3: table size
 		);
-		if (useLocalPalettes)
-		{
-#if 0
-			// Local color table
-			index = 0;
-			while (index < 256)
-			{
-				uint32_t c = index < colors.size() ? colors[index] : 0;
-				Write8(c >> 24); // r
-				Write8(c >> 16); // g
-				Write8(c >> 8); // b
-				++index;
-			}
-#endif
-		}
-
+		if (localPalette)
+			os.write((const char*)palette.data(), palette.size());
 
 		// LZW table data
 		LZW lzw(os,8);
@@ -193,17 +179,12 @@ public:
 	}
 
 private:
-	// color quantization survey
-	// "Forty years of color quantization: a modern, algorithmic survey," 2023, M. Emre Celebi
-	void WritePalette()
-	{
-//		todo
-	}
 
 	// map data into pixel indices
 	void ColorMapper(const uint8_t* rgbaData, std::vector<uint8_t> & pixels)
 	{
 		pixels.clear();
+		lruColors.clear();
 		int index = 0;
 		while (index < w * h * 4)
 		{

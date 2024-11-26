@@ -21,13 +21,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ColorQuantizer.h" />
+    <ClInclude Include="Dither.h" />
     <ClInclude Include="GIFMaker.h" />
+    <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="giftest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="gif89a.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

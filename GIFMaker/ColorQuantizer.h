@@ -3,8 +3,8 @@
 // Chris Lomont 2022
 // color quantization
 
-#include <algorithm>
-#include <numeric>
+#include <algorithm> // clamp
+#include <cstdint>   // uint8_t
 #include <vector>
 
 class ColorQuantizer {

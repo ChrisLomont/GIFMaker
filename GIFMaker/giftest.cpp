@@ -1,14 +1,39 @@
 // Chris Lomont 2022
-// simplest GIF writer
+// demo use of simplest GIF writer
+// and a high quality palette reduction algorithm
+// and a high quality dither algorithm
+
+#include "ColorQuantizer.h"
+#include "Dither.h"
+#include "GIFMaker.h"
 
 #include <vector>
 #include <iostream>
 #include <filesystem>
-#include "GIFMaker.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 
 namespace fs = std::filesystem;
 
 using namespace std;
+
+bool Load(const std::string & filename, int & w, int & h, vector<uint8_t> & rgba8)
+{
+	int n;
+	// force RGBA8
+	unsigned char *data = stbi_load(filename.c_str(), &w, &h, &n, 4);
+	if (data == nullptr)
+	{
+		cerr << "Invalid file " << filename << endl;
+		return false;
+	}
+	rgba8.resize(w*h*4);
+	memcpy(rgba8.data(), data, w * h * 4);
+	stbi_image_free(data);
+	return true;
+}
 
 void Fill(vector<uint8_t> & rgba, int w, int h, int pct)
 {
@@ -123,21 +148,62 @@ void Decode(const std::string& filename, int w, int h)
 
 int main()
 {
-	int s = 100, maxf = 10;
-	int w = s, h = s;
-	vector<uint8_t> pix(w * h * 4);
-	memset(pix.data(),0,pix.size());
 
-	int delay = 50; // 100ths of sec
+	int delay = 20; // 100ths of sec
 
 	GIFWriter gif;
 	string filename = "test.gif";
-	gif.Start(filename, w, h);
-	for (int f = 0; f < maxf; ++f)
+	int fmax = 50;
+
+	bool quantize = true;
+	bool dither = true;
+
+	for (int f = 0; f < fmax; ++f)
 	{
-		int pct = maxf > 1 ? f * 100 / (maxf - 1) : 50;
-		Fill(pix,w,h,pct);
-		gif.AddFrame(pix.data(), delay);
+		char path[200];
+		sprintf_s(path,200,"../imgs/grad%02d.png",f);
+		cout << (f + 1) << "/" << fmax << ": loading " << path << endl;
+		vector<uint8_t> rgba8;
+		int w, h;
+		if (!Load(path, w, h, rgba8))
+			return 0;
+		if (f == 0)
+			gif.Start(filename, w, h);
+
+		// color quantize (optional)
+		if (quantize)
+		{
+			int numColors = 256;
+			vector<int> pixIndices;
+			pixIndices.resize(w * h); // 1 per pixel
+			vector<uint8_t> palette;
+			palette.resize(numColors * 3); // rgb
+			ColorQuantizer cq;
+			cq.RemapImage(
+				numColors,
+				w, h,
+				rgba8.data(),
+				pixIndices.data(),
+				palette.data()
+			);
+
+			// copy palette into gif
+			gif.palette = palette;
+		}
+
+		// dither to palette, optional
+		if (dither)
+		{
+			auto& palette = gif.palette;
+			Dither dt;
+			dt.DitherImage(
+				w, h, rgba8.data(),
+				palette.size() / 3,
+				palette.data()
+			);
+		}
+
+		gif.AddFrame(rgba8.data(), delay, true);
 	}
 	gif.Write();
 	cout << "File " << filename << " written\n";
