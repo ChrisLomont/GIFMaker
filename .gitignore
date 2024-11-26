@@ -404,3 +404,4 @@ FodyWeavers.xsd
 *.nb
 *.ppm
 GIFMaker/*.gif
+!imgs/*.png
