@@ -8,9 +8,9 @@ Contains
 * single header, small and good **color quantizer**, useful to pick nice palette for RGBA8 image for use in GIFs
 * single header, small and good **image dithering**
 
-NOTE: this does not make small gifs! It uses a nice trick of the LZW format to make encoding use very tiny memory footprint compared to other GIF encoders, which in turn means poor compression.
+NOTE: this now has proper LZW compression for small GIFs as the default. If you want to use less memory, but larger GIFs (say for embedded items), set the option before calling Start. The low memory options uses a nice trick of the LZW format to make encoding use very tiny memory footprint compared to other GIF encoders, which in turn means poor compression.
 
-The encode has default internal palette
+The encode has default internal palette (which can be overridden)
 
 ![DeluxePaint-palette](GIFMaker/DeluxePaint-palette.png)
 
