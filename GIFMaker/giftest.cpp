@@ -170,29 +170,72 @@ void Decode(const std::string& filename, int w, int h)
 	cout << "File end 0x3B (59) = " << (int)buffer[p++] << endl;
 }
 
+void SmallGIF()
+{   // 203kb with compression good,
+	// 2.70 MB with bad
+	int w = 500, h = 500;
+	GIFWriter gif;
+	vector<uint8_t> rgba8;
+	rgba8.resize(w * h * 4);
+	gif.goodCompression = false;
+	gif.Start("small.gif", w, h);
+	for (int frame = 0; frame < 10; ++frame)
+	{
+		for (int j = 0; j < h; ++j)
+			for (int i = 0; i < w; ++i)
+			{ // noisy
+				int k = (i + j * w) * 4;
+				int r = 0, b = 0, g = 0;
+				if ((i % 10) == frame)
+					r = 255;
+				if ((j % 10) == frame)
+					g = 255;
+				if (r != 0 || g != 0)
+					b = (i + j);
+				rgba8[k + 0] = r;
+				rgba8[k + 1] = g;
+				rgba8[k + 2] = b;
+				rgba8[k + 3] = 255;
+			}
+		gif.AddFrame(rgba8.data(), 20);
+	}
+
+	gif.Write();
+}
+
 int main()
 {
+	//SmallGIF();
+	//return 0;
 
 	int delay = 20; // 100ths of sec
 
 	GIFWriter gif;
 	string filename = "test.gif";
-	int fmax = 50;
+	int framemax = 50;
 
 	bool quantize = true;
 	bool dither = true;
 
-	for (int f = 0; f < fmax; ++f)
+	// each 28.5 MB with compression bad
+	// 5.8 (qd), 4.98(d),  5.1(q), 1.42(_) MB with compression good (default)
+	for (int frame = 0; frame < framemax; ++frame)
 	{
 		char path[200];
-		sprintf_s(path,200,"../imgs/grad%02d.png",f);
-		cout << (f + 1) << "/" << fmax << ": loading " << path << endl;
+		sprintf_s(path,200,"../imgs/grad%02d.png",frame);
+		cout << (frame + 1) << "/" << framemax << ": loading " << path << endl;
 		vector<uint8_t> rgba8;
 		int w, h;
 		if (!Load(path, w, h, rgba8))
 			return 0;
-		if (f == 0)
+		if (frame == 0)
+		{
+			if (quantize) {
+				gif.useLocalPalettes = true;
+				gif.useGlobalPalette = false;
+			}
 			gif.Start(filename, w, h);
+		}
 
 		// color quantize (optional)
 		if (quantize)
@@ -227,7 +270,7 @@ int main()
 			);
 		}
 
-		gif.AddFrame(rgba8.data(), delay, true);
+		gif.AddFrame(rgba8.data(), delay);
 	}
 	gif.Write();
 	cout << "File " << filename << " written\n";
